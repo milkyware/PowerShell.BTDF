@@ -4,7 +4,7 @@
 
 PowerShell.BTDF is a PowerShell module to work in conjunction with the BTDF packing framework.
 
-It was inspired by the BizTalk ALM project (biztalkalm.codeplex.com) as I've used this before in automated build and releases of BizTalk application. These functions are designed to include functionality to dynamically work out referenced applications and deploy applications in the correct order
+It was inspired by the BizTalk ALM project (biztalkalm.codeplex.com) as I've used this before in automated builds and releases of BizTalk applications. These functions are designed to dynamically work out referenced applications and (re)deploy applications in the correct order to simply the deployment process
 
 ## Notes
 
