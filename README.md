@@ -4,7 +4,7 @@
 
 PowerShell.BTDF is a PowerShell module to work in conjunction with the BTDF packing framework.
 
-It was inspired by the BizTalk ALM project (biztalkalm.codeplex.com) as I've used this before in automated builds and releases of BizTalk applications. These functions are designed to dynamically work out referenced applications and (re)deploy applications in the correct order to simply the deployment process
+It was inspired by the BizTalk ALM project (biztalkalm.codeplex.com) as I've used this before in automated builds and releases of BizTalk applications. These functions are designed to dynamically work out referenced applications and (re)deploy applications in the correct order to simplify the deployment process
 
 ## Notes
 
@@ -24,3 +24,8 @@ For the server receiving the remote command (e.g. BizTalk server)
 
 The remote command then needs to pass authentication using **CredSSP** e.g.:  
 **Invoke-Command -ComputerName *computer* ... -Credentials *creds* -Authentication CredSSP**
+
+## Known Issues
+
+### MSBuild slow to return
+Due to using Start-Process and MSBuild spawning other processes, MSBuild can be slow to return all of the child processes resulting in the finished building hanging
