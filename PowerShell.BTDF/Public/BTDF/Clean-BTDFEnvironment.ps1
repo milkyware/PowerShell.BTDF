@@ -53,7 +53,7 @@ function Clean-BTDFEnvironment {
                 Write-Warning "$($a.Name) already removed"
                 
             } elseif ($PSBoundParameters["Exemptions"].Contains($a.Name)) {
-                Write-Information "$($a.Name) exempt"
+                Write-Verbose "$($a.Name) exempt"
             } else {
                 Write-Information "Removing $($a.Name)"
                 Deploy-BTDFApplication -ProjectPath $a.ProjectPath `
