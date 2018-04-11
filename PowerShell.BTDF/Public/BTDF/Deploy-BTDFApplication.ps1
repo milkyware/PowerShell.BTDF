@@ -110,6 +110,15 @@ function Deploy-BTDFApplication {
         }
         #endregion
 
+        #region Get properties from BTDF project
+        $btdfProject = Join-Path -Path $ProjectPath -ChildPath "Deployment\Deployment.btdfproj"
+        $btdfProjectXml = [xml](Get-Content -Path $btdfProject)
+        $manufacturer = $btdfProjectXml.GetElementsByTagName("Manufacturer")."#text"
+        Write-Debug "Manufacturer = $manufacturer"
+        $projectName = $btdfProjectXml.GetElementsByTagName("ProjectName")."#text"
+        Write-Debug "ProjectName = $projectName"
+        #endregion
+
         #region Get back referenced applications
         $btsCatalog.Refresh()
         $btsApp = $btsCatalog.Applications["$projectName"]
@@ -150,14 +159,6 @@ function Deploy-BTDFApplication {
         #endregion
 
         #region Calculate deployment variables
-        #Get properties from BTDF project
-        $btdfProject = Join-Path -Path $ProjectPath -ChildPath "Deployment\Deployment.btdfproj"
-        $btdfProjectXml = [xml](Get-Content -Path $btdfProject)
-        $manufacturer = $btdfProjectXml.GetElementsByTagName("Manufacturer")."#text"
-        Write-Debug "Manufacturer = $manufacturer"
-        $projectName = $btdfProjectXml.GetElementsByTagName("ProjectName")."#text"
-        Write-Debug "ProjectName = $projectName"
-
         #Calculate required properties
         $deployment = (Get-ChildItem -Path $ProjectPath -Filter *Deployment)[0]
         Write-Debug "Deployment = $($deployment.FullName)"
