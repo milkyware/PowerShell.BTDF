@@ -59,7 +59,7 @@
 #>
 
 function Deploy-BTDFApplication {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess=$true)]
     [OutputType([hashtable])]
     Param (
         [Parameter(Position=0, Mandatory=$true, ValueFromPipeline=$true, HelpMessage="Path to the folder of the BizTalk app")]
@@ -110,7 +110,46 @@ function Deploy-BTDFApplication {
         }
         #endregion
 
-        #region Calculate application variables
+        #region Get back referenced applications
+        $btsCatalog.Refresh()
+        $btsApp = $btsCatalog.Applications["$projectName"]
+        Write-Verbose "Checking back references for $projectName"
+        try {
+            if ((-not ($Configuration -eq "Server" -and -not $DeployBTMgmtDB)) `
+                -and ($btsApp -ne $null) `
+                -and ($DeploymentType -in "Deploy","UnDeploy")) {
+                if ($backRefs -eq $null) {
+                    Write-Verbose "Creating new back refs stack"
+                    $backRefs = [System.Collections.Generic.Stack[System.Object]]::new()
+                }
+    
+                $btsApps = $btsCatalog.Applications["$projectName"].BackReferences | Select-Object -Property Name,$projectPathColumn
+                foreach ($a in $btsApps) {
+                    $backRefs.Push($a)
+                    Write-Verbose "Removing back reference: $($a.Name)"
+                    Write-Debug "BizTalk App: $($a.Name) = $($a.ProjectPath)"
+
+                    $undeployParams = $PSBoundParameters
+                    $undeployParams["ProjectPath"] = $a.ProjectPath
+                    $undeployParams["DeploymentType"] = "Undeploy"
+                    Deploy-BTDFApplication @undeployParams
+                }
+                if (($backRefs.Count -gt 0) -and ($btsApps.Count -gt 0)) {
+                    Write-Debug ($backRefs.GetEnumerator() | Out-String)
+                }
+            }
+            else {
+                Write-Verbose "No back references"
+            }
+            $backRefsRemoved = $true
+        }
+        catch {
+            Write-Error -Message "Undeploying back references failed" -ErrorAction Continue
+            Write-Error "$_" -ErrorAction Continue
+        }
+        #endregion
+
+        #region Calculate deployment variables
         #Get properties from BTDF project
         $btdfProject = Join-Path -Path $ProjectPath -ChildPath "Deployment\Deployment.btdfproj"
         $btdfProjectXml = [xml](Get-Content -Path $btdfProject)
@@ -165,45 +204,6 @@ function Deploy-BTDFApplication {
                     "`"$($envSettingsDir.FullName)`"" | Out-Null
             $envSettings = Join-Path -Path $envSettingsDir -ChildPath "Exported_$Environment`Settings.xml" | Get-Item
             Write-Debug "Environment Settings = $($envSettings.FullName)"
-        }
-        #endregion
-
-        #region Get back referenced applications
-        $btsCatalog.Refresh()
-        $btsApp = $btsCatalog.Applications["$projectName"]
-        Write-Verbose "Checking back references for $projectName"
-        try {
-            if ((-not ($Configuration -eq "Server" -and -not $DeployBTMgmtDB)) `
-                -and ($btsApp -ne $null) `
-                -and ($DeploymentType -in "Deploy","UnDeploy")) {
-                if ($backRefs -eq $null) {
-                    Write-Verbose "Creating new back refs stack"
-                    $backRefs = [System.Collections.Generic.Stack[System.Object]]::new()
-                }
-    
-                $btsApps = $btsCatalog.Applications["$projectName"].BackReferences | Select-Object -Property Name,$projectPathColumn
-                foreach ($a in $btsApps) {
-                    $backRefs.Push($a)
-                    Write-Verbose "Removing back reference: $($a.Name)"
-                    Write-Debug "BizTalk App: $($a.Name) = $($a.ProjectPath)"
-
-                    $undeployParams = $PSBoundParameters
-                    $undeployParams["ProjectPath"] = $a.ProjectPath
-                    $undeployParams["DeploymentType"] = "Undeploy"
-                    Deploy-BTDFApplication @undeployParams
-                }
-                if (($backRefs.Count -gt 0) -and ($btsApps.Count -gt 0)) {
-                    Write-Debug ($backRefs.GetEnumerator() | Out-String)
-                }
-            }
-            else {
-                Write-Verbose "No back references"
-            }
-            $backRefsRemoved = $true
-        }
-        catch {
-            Write-Error -Message "Undeploying back references failed" -ErrorAction Continue
-            Write-Error "$_" -ErrorAction Continue
         }
         #endregion
 
