@@ -31,9 +31,10 @@ function Clean-BTDFEnvironment {
         $attributeCollection.Add($parameter)
         $validateSet = New-Object System.Management.Automation.ValidateSetAttribute($btsApps | Select-Object -ExpandProperty Name)
         $attributeCollection.Add($validateSet)
-        $exemptionsParameter = New-Object System.Management.Automation.RuntimeDefinedParameter("Exemptions", [string[]], $attributeCollection)
+        $exemptionsParameter = New-Object System.Management.Automation.RuntimeDefinedParameter("Exemptions", [System.Collections.Generic.List[string]], $attributeCollection)
         $exemptionsParameter.Value = @()
         $paramDict.Add("Exemptions", $exemptionsParameter)
+        $PSBoundParameters["Exemptions"] = [System.Collections.Generic.List[string]]::new()
         #endregion
 
         return $paramDict
@@ -48,20 +49,21 @@ function Clean-BTDFEnvironment {
         }
         
         foreach ($a in $btsApps) {
+            Write-Debug "App: $($a.Name)"
             $btsCatalog.Refresh()
             if (-not $btsCatalog.Applications[$a.Name]) {
                 Write-Warning "$($a.Name) already removed"
                 
-            } elseif ($PSBoundParameters["Exemptions"] -ne $null) {
-                if ($PSBoundParameters["Exemptions"].Contains($a.Name))
-                {
-                    Write-Verbose "$($a.Name) exempt"
-                }
-            } else {
+            } 
+            elseif ($PSBoundParameters["Exemptions"].Contains($a.Name)) {
+                Write-Verbose "$($a.Name) exempt"
+            } 
+            else {
                 Write-Information "Removing $($a.Name)"
                 Deploy-BTDFApplication -ProjectPath $a.ProjectPath `
                     -DeploymentType Undeploy `
-                    -Configuration $Configuration
+                    -Configuration $Configuration `
+                    @cleanParams
             }
         }
     }
