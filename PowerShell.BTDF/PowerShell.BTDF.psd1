@@ -71,7 +71,7 @@ RequiredAssemblies = 'Microsoft.BizTalk.ExplorerOM', 'Microsoft.BizTalk.Operatio
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = 'Clean-BTDFEnvironment', 'Deploy-BTDFApplication', 
                'Install-BTDFApplication', 'Read-SSO', 'Read-SSOInt32', 
-               'Read-SSOString'
+               'Read-SSOString', 'Write-SSOSetting'
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()
