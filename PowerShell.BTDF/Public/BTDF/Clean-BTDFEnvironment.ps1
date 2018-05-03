@@ -42,7 +42,7 @@ function Clean-BTDFEnvironment {
     Process {
         $cleanParams = @{}
         if ($PSBoundParameters.ContainsKey("DeployBTMgmtDB")) {
-            $cleanParams["DeployBTMgmtDB"] = $DeployBTMgmtDB
+            $cleanParams["DeployBTMgmtDB"] = $PSBoundParameters["DeployBTMgmtDB"]
         }
         if ($PSBoundParameters.ContainsKey("TerminateInstances")) {
             $cleanParams["TerminateInstances"] = $TerminateInstances
