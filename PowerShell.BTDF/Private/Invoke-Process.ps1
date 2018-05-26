@@ -15,7 +15,7 @@ function Invoke-Process {
         $stdOutTempFile = "$env:TEMP\$((New-Guid).Guid)"
         $stdErrTempFile = "$env:TEMP\$((New-Guid).Guid)"
 
-        Write-Verbose "Invoking $($FilePath.Name)..."
+        Write-Verbose "Invoking $($FilePath.Name)"
         $processParams = @{
             "FilePath" = $FilePath.FullName
             "Wait" = $true
