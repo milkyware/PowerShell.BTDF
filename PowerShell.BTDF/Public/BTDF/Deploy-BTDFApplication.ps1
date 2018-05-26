@@ -34,6 +34,9 @@
 .PARAMETER TerminateInstances
     If supported by deployment project, terminate running/suspended instances
 
+.PARAMETER SkipRestore
+    Skips restoring dependant applciations, if any
+
 .EXAMPLE
     Deploy application components/assemblies
 
@@ -93,7 +96,10 @@ function Deploy-BTDFApplication {
         [switch]$SkipApplicationStart,
 
         [Parameter(HelpMessage="Terminate instances related to deployed app")]
-        [switch]$TerminateInstances
+        [switch]$TerminateInstances,
+
+        [Parameter(HelpMessage="Skip restoring dependant applications")]
+        [switch]$SkipRestore
     )
     Process {
         #region Parameter checks
@@ -252,7 +258,11 @@ function Deploy-BTDFApplication {
         #endregion
 
         #region Restore back referenced applications in reverse
-        if (($backRefs.Count -gt 0) -and ($DeploymentType -eq "Deploy")) {
+        if ($SkipRestore -and ($backRefs.Count -gt 0)) {
+            Write-Verbose "Skipping restore"
+        }
+
+        if (($backRefs.Count -gt 0) -and ($DeploymentType -eq "Deploy") -and (-not $SkipRestore)) {
             Write-Debug "Back References Count = $($backRefs.Count)"
             while (($backRefs.Count -gt 0) -and ($DeploymentType -eq "Deploy")) {
                 $app = $backRefs.Pop()

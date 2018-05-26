@@ -37,6 +37,9 @@
 .PARAMETER TerminateInstances
     If supported by deployment project, terminate running/suspended instances
 
+.PARAMETER SkipRestore
+    Skips restoring dependant applciations, if any
+
 .EXAMPLE
     Install application components/assemblies
 
@@ -92,7 +95,10 @@ function Install-BTDFApplication {
         [switch]$SkipApplicationStart,
 
         [Parameter(HelpMessage="Terminate instances related to deployed app")]
-        [switch]$TerminateInstances
+        [switch]$TerminateInstances,
+
+        [Parameter(HelpMessage="Skip restoring dependant applications")]
+        [switch]$SkipRestore
     )
     Process {
         $TargetDir = Install-MsiFile -MsiFile $MsiFile -TargetDir $TargetDir
@@ -106,6 +112,7 @@ function Install-BTDFApplication {
             -SkipBizTalkRestart:$SkipBizTalkRestart `
             -SkipIISRestart:$SkipIISRestart `
             -SkipApplicationStart:$SkipApplicationStart `
-            -TerminateInstances:$TerminateInstances
+            -TerminateInstances:$TerminateInstances `
+            -SkipRestore:$SkipRestore
     }
 }
