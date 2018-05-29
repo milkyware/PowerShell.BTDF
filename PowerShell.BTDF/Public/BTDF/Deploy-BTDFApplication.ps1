@@ -140,12 +140,12 @@ function Deploy-BTDFApplication {
     
                 $btsApps = $btsCatalog.Applications["$projectName"].BackReferences | Select-Object -Property Name,$projectPathColumn
                 foreach ($a in $btsApps) {
-                    $backRefs.Push($a)
-                    Write-Verbose "Removing back reference: $($a.Name)"
-                    Write-Debug "BizTalk App: $($a.Name) = $($a.ProjectPath)"
-
                     $btsCatalog.Refresh()
                     if ($btsCatalog.Applications[$a.Name]) {
+                        $backRefs.Push($a)
+                        Write-Verbose "Removing back reference: $($a.Name)"
+                        Write-Debug "BizTalk App: $($a.Name) = $($a.ProjectPath)"
+
                         $undeployParams = $PSBoundParameters
                         $undeployParams["ProjectPath"] = $a.ProjectPath
                         $undeployParams["DeploymentType"] = "Undeploy"
