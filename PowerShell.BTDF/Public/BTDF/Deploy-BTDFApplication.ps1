@@ -128,7 +128,7 @@ function Deploy-BTDFApplication {
         #region Get back referenced applications
         $btsCatalog.Refresh()
         $btsApp = $btsCatalog.Applications["$projectName"]
-        Write-Verbose "Checking back references for $projectName"
+        Write-Verbose "Checking back references for: $projectName"
         try {
             if ((-not ($Configuration -eq "Server" -and -not $DeployBTMgmtDB)) `
                 -and ($btsApp -ne $null) `
@@ -150,6 +150,7 @@ function Deploy-BTDFApplication {
                         $undeployParams["ProjectPath"] = $a.ProjectPath
                         $undeployParams["DeploymentType"] = "Undeploy"
                         Deploy-BTDFApplication @undeployParams
+                        Write-Verbose "Removed back reference: $($a.Name)"
                     }
                     else {
                         Write-Warning "$($a.Name) already removed"
