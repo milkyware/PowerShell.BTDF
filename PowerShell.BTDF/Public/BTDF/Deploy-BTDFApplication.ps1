@@ -142,7 +142,6 @@ function Deploy-BTDFApplication {
                 foreach ($a in $btsApps) {
                     $btsCatalog.Refresh()
                     if ($btsCatalog.Applications[$a.Name]) {
-                        $backRefs.Push($a)
                         Write-Verbose "Removing back reference: $($a.Name)"
                         Write-Debug "BizTalk App: $($a.Name) = $($a.ProjectPath)"
 
@@ -150,6 +149,8 @@ function Deploy-BTDFApplication {
                         $undeployParams["ProjectPath"] = $a.ProjectPath
                         $undeployParams["DeploymentType"] = "Undeploy"
                         Deploy-BTDFApplication @undeployParams
+                        
+                        $backRefs.Push($a)
                         Write-Verbose "Removed back reference: $($a.Name)"
                     }
                     else {
