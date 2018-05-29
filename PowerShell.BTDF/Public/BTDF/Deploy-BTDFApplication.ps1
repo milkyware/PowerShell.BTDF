@@ -144,10 +144,16 @@ function Deploy-BTDFApplication {
                     Write-Verbose "Removing back reference: $($a.Name)"
                     Write-Debug "BizTalk App: $($a.Name) = $($a.ProjectPath)"
 
-                    $undeployParams = $PSBoundParameters
-                    $undeployParams["ProjectPath"] = $a.ProjectPath
-                    $undeployParams["DeploymentType"] = "Undeploy"
-                    Deploy-BTDFApplication @undeployParams
+                    $btsCatalog.Refresh()
+                    if ($btsCatalog.Applications[$a.Name]) {
+                        $undeployParams = $PSBoundParameters
+                        $undeployParams["ProjectPath"] = $a.ProjectPath
+                        $undeployParams["DeploymentType"] = "Undeploy"
+                        Deploy-BTDFApplication @undeployParams
+                    }
+                    else {
+                        Write-Warning "$($a.Name) already removed"
+                    }
                 }
                 if (($backRefs.Count -gt 0) -and ($btsApps.Count -gt 0)) {
                     Write-Debug ($backRefs.GetEnumerator() | Out-String)
