@@ -148,9 +148,13 @@ function Deploy-BTDFApplication {
                         $undeployParams = $PSBoundParameters
                         $undeployParams["ProjectPath"] = $a.ProjectPath
                         $undeployParams["DeploymentType"] = "Undeploy"
-                        Deploy-BTDFApplication @undeployParams
-                        
-                        $backRefs.Push($a)
+
+                        try {
+                            Deploy-BTDFApplication @undeployParams
+                        }
+                        finally {
+                            $backRefs.Push($a)
+                        }
                         Write-Verbose "Removed back reference: $($a.Name)"
                     }
                     else {
