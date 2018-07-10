@@ -39,6 +39,10 @@ Process {
             "Message" = "Packaging"
             "Target" = "Installer"
         }
+        "PreProcessBindings" = @{
+            "Message" = "Pre-Processing bindings"
+            "Target" = "PreprocessBindings"
+        }
         "QuickDeploy" = @{
             "Message" = "Quick deploying application"
             "Target" = "UpdateOrchestration"

@@ -69,7 +69,7 @@ function Deploy-BTDFApplication {
         [System.IO.DirectoryInfo]$ProjectPath,
 
         [Parameter(HelpMessage="Defaults to Deploy")]
-        [ValidateSet("Deploy", "DeployBAM", "DeployBRE", "DeploySSO", "Installer",  "QuickDeploy", "Undeploy", "UndeployBAM", "UndeployBRE")]
+        [ValidateSet("Deploy", "DeployBAM", "DeployBRE", "DeploySSO", "Installer", "PreProcessBindings", "QuickDeploy", "Undeploy", "UndeployBAM", "UndeployBRE")]
         [string]$DeploymentType = "Deploy",
 
         [Parameter(HelpMessage="Valid parameters are Debug, Release and Server. Defaults to Debug")]
@@ -212,7 +212,7 @@ function Deploy-BTDFApplication {
         #endregion
 
         #region Run EnvironmentSettingsExporter
-        if (($DeploymentType -eq "Deploy") -and ($Configuration -eq "Server")) {
+        if (($DeploymentType -eq "Deploy" -or $DeploymentType -eq "PreProcessBindings") -and ($Configuration -eq "Server")) {
             $envSettingsDir = $deployment | Join-Path -ChildPath "EnvironmentSettings" | Get-Item
             Write-Debug "Environment Settings Dir = $($envSettingsDir.FullName)"
 
