@@ -259,6 +259,7 @@ function Deploy-BTDFApplication {
                 }),
                 $(if ($PSBoundParameters.ContainsKey("SkipApplicationStart")) {
                     "/p:StartApplicationOnDeploy=$(-not $SkipApplicationStart)"
+                    "/p:StartReferencedApplicationsOnDeploy=$(-not $SkipApplicationStart)"
                 }),
                 "/l:FileLogger,Microsoft.Build.Engine;logfile=`"$results`""
             Invoke-MSBuild -Project $btdfProject `
