@@ -252,10 +252,10 @@ function Deploy-BTDFApplication {
                     "/p:SkipHostInstancesRestart=$SkipBizTalkRestart"
                 }),
                 $(if ($PSBoundParameters.ContainsKey("SkipIISRestart")) {
-                    "/p:SkipHostInstancesRestart=$SkipIISRestart"
+                    "/p:SkipIISReset=$SkipIISRestart"
                 }),
                 $(if ($PSBoundParameters.ContainsKey("SkipUnDeploy")) {
-                    "/p:SkipHostInstancesRestart=$SkipUnDeploy"
+                    "/p:SkipUndeploy=$SkipUnDeploy"
                 }),
                 $(if ($PSBoundParameters.ContainsKey("SkipApplicationStart")) {
                     "/p:StartApplicationOnDeploy=$(-not $SkipApplicationStart)"
