@@ -64,55 +64,80 @@
 function Install-BTDFApplication {
     [CmdletBinding()]
     Param (
-        [Parameter(Position=0, Mandatory=$true, HelpMessage="Path to existing BTDF MSI")]
-        [ValidateScript({Test-Path -Path $_.Fullname -PathType Leaf -Include *.msi})]
+        [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Path to existing BTDF MSI")]
+        [ValidateScript( {Test-Path -Path $_.Fullname -PathType Leaf -Include *.msi})]
         [System.IO.FileInfo]$MsiFile,
 
-        [Parameter(Position=1, Mandatory=$true, HelpMessage="Path wherein the resource files will be installed")]
+        [Parameter(Position = 1, Mandatory = $true, HelpMessage = "Path wherein the resource files will be installed")]
         [System.IO.DirectoryInfo]$TargetDir,
 
-        [Parameter(HelpMessage="Valid parameters as Deploy, Undeploy, UpdateOrchestration. Defaults to Deploy")]
+        [Parameter(HelpMessage = "Valid parameters as Deploy, Undeploy, UpdateOrchestration. Defaults to Deploy")]
         [ValidateSet("Deploy", "UnDeploy", "UpdateOrchestration")]
         [string]$DeploymentType = "Deploy",
 
-        [Parameter(HelpMessage="Valid parameters are Local, Dev, Int, UAT, Train and Prod. Defaults to Local")]
-        [ValidateSet("Local","Dev","Int","UAT","Train","Prod")]
+        [Parameter(HelpMessage = "Valid parameters are Local, Dev, Int, UAT, Train and Prod. Defaults to Local")]
+        [ValidateSet("Local", "Dev", "Int", "UAT", "Train", "Prod")]
         [string]$Environment = "Local",
 
-        [Parameter(HelpMessage="Register artifacts in BizTalk DB")]
+        [Parameter(HelpMessage = "Register artifacts in BizTalk DB")]
         [switch]$DeployBTMgmtDB,
   
-        [Parameter(HelpMessage="Only deploy instead of redeploy")]
+        [Parameter(HelpMessage = "Only deploy instead of redeploy")]
         [switch]$SkipUnDeploy,
 
-        [Parameter(HelpMessage="Skip starting BizTalk hosts back up post deployment")]
+        [Parameter(HelpMessage = "Skip starting BizTalk hosts back up post deployment")]
         [switch]$SkipBizTalkRestart,
 
-        [Parameter(HelpMessage="Skip IISReset post deployment")]
+        [Parameter(HelpMessage = "Skip IISReset post deployment")]
         [switch]$SkipIISRestart,
 
-        [Parameter(HelpMessage="Skipping starting BizTalk app post deployment")]
+        [Parameter(HelpMessage = "Skipping starting BizTalk app post deployment")]
         [switch]$SkipApplicationStart,
 
-        [Parameter(HelpMessage="Terminate instances related to deployed app")]
+        [Parameter(HelpMessage = "Terminate instances related to deployed app")]
         [switch]$TerminateInstances,
 
-        [Parameter(HelpMessage="Skip restoring dependant applications")]
+        [Parameter(HelpMessage = "Skip restoring dependant applications")]
         [switch]$SkipRestore
     )
     Process {
         $TargetDir = Install-MsiFile -MsiFile $MsiFile -TargetDir $TargetDir
 
+        #region Build splat params
+        $splatParams = @{}
+        if ($PSBoundParameters.Contains("DeploymentType")) {
+            $splatParams.Add("DeploymentType", $DeploymentType)
+        }
+        if ($PSBoundParameters.Contains("Configuration")) {
+            $splatParams.Add("Configuration", $Configuration)
+        }
+        if ($PSBoundParameters.Contains("Environment")) {
+            $splatParams.Add("Environment", $Environment)
+        }
+        if ($PSBoundParameters.Contains("DeployBTMgmtDB")) {
+            $splatParams.Add("DeployBTMgmtDB", $DeployBTMgmtDB)
+        }
+        if ($PSBoundParameters.Contains("SkipUndeploy")) {
+            $splatParams.Add("SkipUndeploy", $SkipUndeploy)
+        }
+        if ($PSBoundParameters.Contains("SkipBizTalkRestart")) {
+            $splatParams.Add("SkipBizTalkRestart", $SkipBizTalkRestart)
+        }
+        if ($PSBoundParameters.Contains("SkipIISRestart")) {
+            $splatParams.Add("SkipIISRestart", $SkipIISRestart)
+        }
+        if ($PSBoundParameters.Contains("SkipApplicationStart")) {
+            $splatParams.Add("SkipApplicationStart", $SkipApplicationStart)
+        }
+        if ($PSBoundParameters.Contains("TerminateInstances")) {
+            $splatParams.Add("TerminateInstances", $TerminateInstances)
+        }
+        if ($PSBoundParameters.Contains("SkipRestore")) {
+            $splatParams.Add("SkipRestore", $SkipRestore)
+        }
+        #endregion
+            
         Deploy-BTDFApplication -ProjectPath $TargetDir `
-            -DeploymentType Deploy `
-            -Configuration "Server" `
-            -Environment $Environment `
-            -DeployBTMgmtDB:$DeployBTMgmtDB `
-            -SkipUndeploy:$SkipUnDeploy `
-            -SkipBizTalkRestart:$SkipBizTalkRestart `
-            -SkipIISRestart:$SkipIISRestart `
-            -SkipApplicationStart:$SkipApplicationStart `
-            -TerminateInstances:$TerminateInstances `
-            -SkipRestore:$SkipRestore
+            @splatParams
     }
 }
