@@ -131,14 +131,18 @@ function Deploy-BTDFApplication {
         Write-Verbose "Checking back references for: $projectName"
         try {
             if ((-not ($Configuration -eq "Server" -and -not $DeployBTMgmtDB)) `
-                -and ($btsApp -ne $null) `
+                -and $btsApp `
                 -and ($DeploymentType -in "Deploy","UnDeploy")) {
-                if ($backRefs -eq $null) {
+                if (-not $backRefs) {
                     Write-Verbose "Creating new back refs stack"
                     $backRefs = [System.Collections.Generic.Stack[System.Object]]::new()
                 }
     
                 $btsApps = $btsCatalog.Applications["$projectName"].BackReferences | Select-Object -Property Name,$projectPathColumn
+
+                if ($btsApps.Count -gt 0) {
+                    Write-Verbose "Back refs found"
+                }
                 foreach ($a in $btsApps) {
                     $btsCatalog.Refresh()
                     if ($btsCatalog.Applications[$a.Name]) {
