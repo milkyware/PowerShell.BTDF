@@ -105,39 +105,37 @@ function Install-BTDFApplication {
 
         #region Build splat params
         $splatParams = @{}
-        if ($PSBoundParameters.Contains("DeploymentType")) {
+        if ($PSBoundParameters.ContainsKey("DeploymentType")) {
             $splatParams.Add("DeploymentType", $DeploymentType)
         }
-        if ($PSBoundParameters.Contains("Configuration")) {
-            $splatParams.Add("Configuration", $Configuration)
-        }
-        if ($PSBoundParameters.Contains("Environment")) {
+        if ($PSBoundParameters.ContainsKey("Environment")) {
             $splatParams.Add("Environment", $Environment)
         }
-        if ($PSBoundParameters.Contains("DeployBTMgmtDB")) {
+        if ($PSBoundParameters.ContainsKey("DeployBTMgmtDB")) {
             $splatParams.Add("DeployBTMgmtDB", $DeployBTMgmtDB)
         }
-        if ($PSBoundParameters.Contains("SkipUndeploy")) {
+        if ($PSBoundParameters.ContainsKey("SkipUndeploy")) {
             $splatParams.Add("SkipUndeploy", $SkipUndeploy)
         }
-        if ($PSBoundParameters.Contains("SkipBizTalkRestart")) {
+        if ($PSBoundParameters.ContainsKey("SkipBizTalkRestart")) {
             $splatParams.Add("SkipBizTalkRestart", $SkipBizTalkRestart)
         }
-        if ($PSBoundParameters.Contains("SkipIISRestart")) {
+        if ($PSBoundParameters.ContainsKey("SkipIISRestart")) {
             $splatParams.Add("SkipIISRestart", $SkipIISRestart)
         }
-        if ($PSBoundParameters.Contains("SkipApplicationStart")) {
+        if ($PSBoundParameters.ContainsKey("SkipApplicationStart")) {
             $splatParams.Add("SkipApplicationStart", $SkipApplicationStart)
         }
-        if ($PSBoundParameters.Contains("TerminateInstances")) {
+        if ($PSBoundParameters.ContainsKey("TerminateInstances")) {
             $splatParams.Add("TerminateInstances", $TerminateInstances)
         }
-        if ($PSBoundParameters.Contains("SkipRestore")) {
+        if ($PSBoundParameters.ContainsKey("SkipRestore")) {
             $splatParams.Add("SkipRestore", $SkipRestore)
         }
         #endregion
             
-        Deploy-BTDFApplication -ProjectPath $TargetDir `
+        Deploy-BTDFApplication -ProjectPath  $TargetDir `
+            -Configuration "Server" `
             @splatParams
     }
 }
