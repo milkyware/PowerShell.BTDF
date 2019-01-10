@@ -1,6 +1,11 @@
 Param (
 )
 Process {
+    #Load references
+    [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.BizTalk.ExplorerOM")
+    [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.BizTalk.Operations")
+    [System.Reflection.Assembly]::LoadWithPartialName("SSOSettingsFileReader")
+
     #region Execute module scripts
     Get-ChildItem -Path $PSScriptRoot -Include *.ps1 -Recurse | ForEach-Object {
         . $_.FullName

@@ -54,7 +54,7 @@ Description = 'Functions to deploy BizTalk apps packaged using BTDF'
 # RequiredModules = @()
 
 # Assemblies that must be loaded prior to importing this module
-RequiredAssemblies = 'Microsoft.BizTalk.ExplorerOM', 'Microsoft.BizTalk.Operations', 'SSOSettingsFileReader'
+# RequiredAssemblies = @()
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
 # ScriptsToProcess = @()
