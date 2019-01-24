@@ -21,7 +21,7 @@ Process {
 
     Get-Module | Select-Object ModuleType, Version, Name, Path
 
-    $manifests = Get-ChildItem -Path $PSScriptRoot -Recurse  *.psd1
+    $manifests = Get-ChildItem -Path "$PSScriptRoot\..\" -Recurse  *.psd1
     Write-Debug -Message "Manifests found: $($manifests.Count)"
 
     foreach ($m in $manifests) {
