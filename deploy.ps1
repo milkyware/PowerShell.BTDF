@@ -11,9 +11,11 @@ Process {
 
     Get-Module | Remove-Module -Force -ErrorAction SilentlyContinue
 
+    Write-Verbose "Installing PowerShell modules"
     Import-Module -Name Nuget -MinimumVersion "1.3.3" -Force
     Import-Module -Name PackageManagement -MinimumVersion "1.2.4" -Force
     Import-Module -Name PowerShellGet -MinimumVersion "2.0.3" -Force
+    Write-Verbose "PowerShell modules installed"
 
     # Get-Module | Group-Object -Property Name | Where-Object {$_.Count -gt 1} | Foreach-Object {$_ | Select-Object -ExpandProperty Group | Sort-Object -Property Version -Descending | Select-Object -Skip 1} | Remove-Module -Force
 
