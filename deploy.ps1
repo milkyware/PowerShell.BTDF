@@ -11,15 +11,14 @@ Param (
     [string]$Prerelease = ""
 )
 Process {
+    Write-Debug "ApiKey = $ApiKey"
     Write-Debug "Version = $Version"
     Write-Debug "Prerelease = $Prerelease"
 
+    Write-Verbose "Installing PowerShell modules"
     Install-PackageProvider -Name "Nuget" -Scope CurrentUser -MinimumVersion "2.8.5.201" -Force | Out-Null
     Install-Module -Name Nuget, PackageManagement, PowerShellGet -Scope CurrentUser -Force | Out-Null
 
-    Get-Module | Remove-Module -Force -ErrorAction SilentlyContinue
-
-    Write-Verbose "Installing PowerShell modules"
     Import-Module -Name Nuget -MinimumVersion "1.3.3" -Force | Out-Null
     Import-Module -Name PackageManagement -MinimumVersion "1.2.4" -Force | Out-Null
     Import-Module -Name PowerShellGet -MinimumVersion "2.0.3" -Force | Out-Null
@@ -30,7 +29,6 @@ Process {
         Write-Verbose "Found multiple versions of $($_.Name)"
         $_ | Select-Object -ExpandProperty Group | Sort-Object -Property Version -Descending | Select-Object -Skip 1
     } | Remove-Module -Force
-
     Get-Module | Select-Object ModuleType, Version, Name, Path
 
     Write-Verbose "Updating manifest"
