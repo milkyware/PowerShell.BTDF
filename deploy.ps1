@@ -11,9 +11,9 @@ Param (
     [string]$Prerelease = ""
 )
 Process {
-    Write-Debug "ApiKey = $ApiKey"
-    Write-Debug "Version = $Version"
-    Write-Debug "Prerelease = $Prerelease"
+    Write-Verbose "ApiKey = $ApiKey"
+    Write-Verbose "Version = $Version"
+    Write-Verbose "Prerelease = $Prerelease"
 
     Write-Verbose "Installing PowerShell modules"
     Install-PackageProvider -Name "Nuget" -Scope CurrentUser -MinimumVersion "2.8.5.201" -Force | Out-Null
