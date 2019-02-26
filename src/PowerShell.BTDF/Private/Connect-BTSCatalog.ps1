@@ -11,7 +11,7 @@ function Connect-BTSCatalog {
     )
     Process {        
         #Calculate BizTalk connection string
-        $wmi = Get-WmiObject -Class MSBTS_GroupSetting -Namespace root\MicrosoftBizTalkServer -computer $server -ErrorAction Stop
+        $wmi = Get-WmiObject -Class MSBTS_GroupSetting -Namespace root\MicrosoftBizTalkServer -ComputerName $server -ErrorAction Stop
         if (-not $SQLInstance) {
             $SQLInstance = $wmi.MgmtDbServerName
         }
