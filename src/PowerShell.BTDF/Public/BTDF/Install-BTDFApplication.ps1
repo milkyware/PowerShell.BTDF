@@ -62,7 +62,7 @@
 #>
 
 function Install-BTDFApplication {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     Param (
         [Parameter(Position = 0, Mandatory = $true, HelpMessage = "Path to existing BTDF MSI")]
         [ValidateScript( {Test-Path -Path $_.Fullname -PathType Leaf -Include *.msi})]
@@ -105,12 +105,6 @@ function Install-BTDFApplication {
 
         #region Build splat params
         $splatParams = @{}
-        if ($PSBoundParameters.ContainsKey("DeploymentType")) {
-            $splatParams.Add("DeploymentType", $DeploymentType)
-        }
-        if ($PSBoundParameters.ContainsKey("Environment")) {
-            $splatParams.Add("Environment", $Environment)
-        }
         if ($PSBoundParameters.ContainsKey("DeployBTMgmtDB")) {
             $splatParams.Add("DeployBTMgmtDB", $DeployBTMgmtDB)
         }
@@ -136,6 +130,8 @@ function Install-BTDFApplication {
             
         Deploy-BTDFApplication -ProjectPath  $TargetDir `
             -Configuration "Server" `
+            -DeploymentType $DeploymentType `
+            -Environment $Environment `
             @splatParams
     }
 }

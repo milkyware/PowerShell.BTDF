@@ -167,7 +167,7 @@ function Deploy-BTDFApplication
 
                         try
                         {
-                            $PSCmdlet.ShouldProcess($a.Name, "Removing BizTalk Application") 
+                            if ($PSCmdlet.ShouldProcess($a.Name, "Removing BizTalk Application"))
                             {
                                 Deploy-BTDFApplication @undeployParams
                             }
@@ -206,7 +206,7 @@ function Deploy-BTDFApplication
         $deployment = (Get-ChildItem -Path $ProjectPath -Filter *Deployment)[0]
         Write-Debug "Deployment = $($deployment.FullName)"
         $resultsPath = Join-Path -Path $ProjectPath -ChildPath "DeployResults\DeployResults.txt"
-        $PSCmdlet.ShouldProcess($resultsPath, "Create empty msbuild log file") 
+        if ($PSCmdlet.ShouldProcess($resultsPath, "Create empty msbuild log file"))
         {
             New-Item -Path $resultsPath -ItemType File -Force | Out-Null
         }
@@ -257,7 +257,7 @@ function Deploy-BTDFApplication
 
             $settingsExporter = Join-Path -Path $deployment.FullName -ChildPath "Framework\DeployTools\EnvironmentSettingsExporter.exe"
             Write-Debug "Settings Exporter = $settingsExporter"
-            $PSCmdlet.ShouldProcess($settingsExporter, "Exporting BTDF settings") 
+            if ($PSCmdlet.ShouldProcess($settingsExporter, "Exporting BTDF settings"))
             {
                 Invoke-Process -FilePath $settingsExporter `
                 -ArgumentList "`"$(Join-Path -Path $envSettingsDir.FullName -ChildPath \SettingsFileGenerator.xml)`"",
@@ -314,7 +314,7 @@ function Deploy-BTDFApplication
                     "/p:StartReferencedApplicationsOnDeploy=$(-not $SkipApplicationStart)"
                 }),
             "/l:FileLogger,Microsoft.Build.Engine;logfile=`"$resultsPath`""
-            $PSCmdlet.ShouldProcess($btdfProject, "Deploy BTDF packaged application")
+            if ($PSCmdlet.ShouldProcess($btdfProject, "Deploy BTDF packaged application"))
             {
                 Invoke-MSBuild -Project $btdfProject `
                 -ArgumentList $msbuildArgs `
@@ -342,7 +342,7 @@ function Deploy-BTDFApplication
                 $deployParams["ProjectPath"] = $app.ProjectPath
                 $deployParams["DeploymentType"] = $DeploymentType
                 $deployParams["Configuration"] = $Configuration
-                $PSCmdlet.ShouldProcess($app.Name, "Restoring BizTalk Application")
+                if ($PSCmdlet.ShouldProcess($app.Name, "Restoring BizTalk Application"))
                 {
                     Deploy-BTDFApplication @deployParams
                 }
