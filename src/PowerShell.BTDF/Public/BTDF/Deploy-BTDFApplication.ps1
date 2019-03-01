@@ -206,7 +206,7 @@ function Deploy-BTDFApplication
         $deployment = (Get-ChildItem -Path $ProjectPath -Filter *Deployment)[0]
         Write-Debug "Deployment = $($deployment.FullName)"
         $resultsPath = Join-Path -Path $ProjectPath -ChildPath "DeployResults\DeployResults.txt"
-        if ($PSCmdlet.ShouldProcess($resultsPath, "Create empty msbuild log file"))
+        if ($PSCmdlet.ShouldProcess($resultsPath, "Create empty MSBuild log file"))
         {
             New-Item -Path $resultsPath -ItemType File -Force | Out-Null
         }
