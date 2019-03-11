@@ -61,13 +61,12 @@
     General notes
 #>
 
-function Deploy-BTDFApplication
-{
+function Deploy-BTDFApplication {
     [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([hashtable])]
     Param (
         [Parameter(Position = 0, Mandatory = $true, ValueFromPipeline = $true, HelpMessage = "Path to the folder of the BizTalk app")]
-        [System.IO.DirectoryInfo]$ProjectPath,
+        [System.IO.DirectoryInfo[]]$ProjectPath,
 
         [Parameter(HelpMessage = "Defaults to Deploy")]
         [ValidateSet("Deploy", "DeployBAM", "DeployBRE", "DeploySSO", "Installer", "PreProcessBindings", "QuickDeploy", "Undeploy", "UndeployBAM", "UndeployBRE")]
@@ -102,252 +101,213 @@ function Deploy-BTDFApplication
         [Parameter(HelpMessage = "Skip restoring dependant applications")]
         [switch]$SkipRestore
     )
-    Process
-    {
+    Process {
         #region Parameter checks
-        if ($Configuration -ne "Server")
-        {
-            if ($PSBoundParameters.ContainsKey("Environment"))
-            {
+        if ($Configuration -ne "Server") {
+            if ($PSBoundParameters.ContainsKey("Environment")) {
                 throw [System.ArgumentException]::new("Environment must be used with the `"Server`" configuration")
             }
-            if ($PSBoundParameters.ContainsKey("DeployBTMgmtDB"))
-            {
+            if ($PSBoundParameters.ContainsKey("DeployBTMgmtDB")) {
                 throw [System.ArgumentException]::new("DeployBTMgmtDB must be used with the `"Server`" configuration")
             }
-            if ($PSBoundParameters.ContainsKey("SkipUnDeploy"))
-            {
+            if ($PSBoundParameters.ContainsKey("SkipUnDeploy")) {
                 throw [System.ArgumentException]::new("SkipUnDeploy must be used with the `"Server`" configuration")
             }
         }
         #endregion
 
-        #region Get properties from BTDF project
-        $btdfProject = Join-Path -Path $ProjectPath -ChildPath "Deployment\Deployment.btdfproj"
-        $btdfProjectXml = [xml](Get-Content -Path $btdfProject)
-        $manufacturer = $btdfProjectXml.GetElementsByTagName("Manufacturer")."#text"
-        Write-Debug "Manufacturer = $manufacturer"
-        $projectName = $btdfProjectXml.GetElementsByTagName("ProjectName")."#text"
-        Write-Debug "ProjectName = $projectName"
-        #endregion
+        foreach ($pp in $ProjectPath) {
+            Write-Debug "ProjectPath = $pp"
 
-        #region Get back referenced applications
-        $btsCatalog.Refresh()
-        $btsApp = $btsCatalog.Applications["$projectName"]
-        Write-Verbose "Checking back references for: $projectName"
-        try
-        {
-            if ((-not ($Configuration -eq "Server" -and -not $DeployBTMgmtDB)) `
-                    -and $btsApp `
-                    -and ($DeploymentType -in "Deploy", "UnDeploy"))
-            {
-                if (-not $backRefs)
-                {
-                    Write-Verbose "Creating new back refs stack"
-                    $backRefs = [System.Collections.Generic.Stack[System.Object]]::new()
-                }
+            #region Get properties from BTDF project
+            $btdfProject = Join-Path -Path $pp -ChildPath "Deployment\Deployment.btdfproj"
+            $btdfProjectXml = [xml](Get-Content -Path $btdfProject)
+            $manufacturer = $btdfProjectXml.GetElementsByTagName("Manufacturer")."#text"
+            Write-Debug "Manufacturer = $manufacturer"
+            $projectName = $btdfProjectXml.GetElementsByTagName("ProjectName")."#text"
+            Write-Debug "ProjectName = $projectName"
+            #endregion
+
+            #region Get back referenced applications
+            $btsCatalog.Refresh()
+            $btsApp = $btsCatalog.Applications["$projectName"]
+            Write-Verbose "Checking back references for: $projectName"
+            try {
+                if ((-not ($Configuration -eq "Server" -and -not $DeployBTMgmtDB)) `
+                        -and $btsApp `
+                        -and ($DeploymentType -in "Deploy", "UnDeploy")) {
+                    if (-not $backRefs) {
+                        Write-Verbose "Creating new back refs stack"
+                        $backRefs = [System.Collections.Generic.Stack[System.Object]]::new()
+                    }
     
-                $btsApps = $btsCatalog.Applications["$projectName"].BackReferences | Select-Object -Property Name, $projectPathColumn
+                    $btsApps = $btsCatalog.Applications["$projectName"].BackReferences | Select-Object -Property Name, $projectPathColumn
 
-                if ($btsApps.Count -gt 0)
-                {
-                    Write-Verbose "Back refs found"
-                }
-                foreach ($a in $btsApps)
-                {
-                    $btsCatalog.Refresh()
-                    if ($btsCatalog.Applications[$a.Name])
-                    {
-                        Write-Verbose "Removing back reference: $($a.Name)"
-                        Write-Debug "BizTalk App: $($a.Name) = $($a.ProjectPath)"
+                    if ($btsApps.Count -gt 0) {
+                        Write-Verbose "Back refs found"
+                    }
+                    foreach ($a in $btsApps) {
+                        $btsCatalog.Refresh()
+                        if ($btsCatalog.Applications[$a.Name]) {
+                            Write-Verbose "Removing back reference: $($a.Name)"
+                            Write-Debug "BizTalk App: $($a.Name) = $($a.ProjectPath)"
 
-                        $undeployParams = $PSBoundParameters
-                        $undeployParams["ProjectPath"] = $a.ProjectPath
-                        $undeployParams["DeploymentType"] = "Undeploy"
+                            $undeployParams = $PSBoundParameters
+                            $undeployParams["ProjectPath"] = $a.ProjectPath
+                            $undeployParams["DeploymentType"] = "Undeploy"
 
-                        try
-                        {
-                            if ($PSCmdlet.ShouldProcess($a.Name, "Removing BizTalk Application"))
-                            {
-                                Deploy-BTDFApplication @undeployParams
+                            try {
+                                if ($PSCmdlet.ShouldProcess($a.Name, "Removing BizTalk Application")) {
+                                    Deploy-BTDFApplication @undeployParams
+                                }
                             }
+                            finally {
+                                $backRefs.Push($a)
+                            }
+                            Write-Verbose "Removed back reference: $($a.Name)"
                         }
-                        finally
-                        {
-                            $backRefs.Push($a)
+                        else {
+                            Write-Warning "$($a.Name) already removed"
                         }
-                        Write-Verbose "Removed back reference: $($a.Name)"
                     }
-                    else
-                    {
-                        Write-Warning "$($a.Name) already removed"
+                    if (($backRefs.Count -gt 0) -and ($btsApps.Count -gt 0)) {
+                        Write-Debug ($backRefs.GetEnumerator() | Out-String)
                     }
                 }
-                if (($backRefs.Count -gt 0) -and ($btsApps.Count -gt 0))
-                {
-                    Write-Debug ($backRefs.GetEnumerator() | Out-String)
+                else {
+                    Write-Verbose "No back references"
                 }
+                $backRefsRemoved = $true
             }
-            else
-            {
-                Write-Verbose "No back references"
+            catch {
+                Write-Error -Message "Undeploying back references failed" -ErrorAction Continue
+                Write-Error -Message "$_" -ErrorAction Continue
             }
-            $backRefsRemoved = $true
-        }
-        catch
-        {
-            Write-Error -Message "Undeploying back references failed" -ErrorAction Continue
-            Write-Error -Message "$_" -ErrorAction Continue
-        }
-        #endregion
+            #endregion
 
-        #region Calculate deployment variables
-        #Calculate required properties
-        $deployment = (Get-ChildItem -Path $ProjectPath -Filter *Deployment)[0]
-        Write-Debug "Deployment = $($deployment.FullName)"
-        $resultsPath = Join-Path -Path $ProjectPath -ChildPath "DeployResults\DeployResults.txt"
-        if ($PSCmdlet.ShouldProcess($resultsPath, "Create empty MSBuild log file"))
-        {
-            New-Item -Path $resultsPath -ItemType File -Force | Out-Null
-        }
-        Write-Debug "Results = $resultsPath"
+            #region Calculate deployment variables
+            #Calculate required properties
+            $deployment = (Get-ChildItem -Path $pp -Filter *Deployment)[0]
+            Write-Debug "Deployment = $($deployment.FullName)"
+            $resultsPath = Join-Path -Path $pp -ChildPath "DeployResults\DeployResults.txt"
+            if ($PSCmdlet.ShouldProcess($resultsPath, "Create empty MSBuild log file")) {
+                New-Item -Path $resultsPath -ItemType File -Force | Out-Null
+            }
+            Write-Debug "Results = $resultsPath"
 
-        #Get/Create project registry keys
-        $manufacturerReg = if ($softwareReg32 | Join-Path -ChildPath $manufacturer | Test-Path)
-        {
-            $softwareReg32 | Join-Path -ChildPath $manufacturer | Get-Item
-        }
-        else
-        {
-            New-Item -Path $softwareReg32.PSPath -Name $manufacturer
-            Write-Verbose "Created manufacturer key: $manufacturer"
-        }
+            #Get/Create project registry keys
+            $manufacturerReg = if ($softwareReg32 | Join-Path -ChildPath $manufacturer | Test-Path) {
+                $softwareReg32 | Join-Path -ChildPath $manufacturer | Get-Item
+            }
+            else {
+                New-Item -Path $softwareReg32.PSPath -Name $manufacturer
+                Write-Verbose "Created manufacturer key: $manufacturer"
+            }
 
-        $projectReg = if ($manufacturerReg | Join-Path -ChildPath $projectName | Test-Path)
-        {
-            $manufacturerReg | Join-Path -ChildPath $projectName | Get-Item
-        }
-        else
-        {
-            New-Item -Path $manufacturerReg.PSPath -Name $projectName
-            Write-Verbose "Created project key: $projectName"
-        }
+            $projectReg = if ($manufacturerReg | Join-Path -ChildPath $projectName | Test-Path) {
+                $manufacturerReg | Join-Path -ChildPath $projectName | Get-Item
+            }
+            else {
+                New-Item -Path $manufacturerReg.PSPath -Name $projectName
+                Write-Verbose "Created project key: $projectName"
+            }
         
-        #Get properties from Application BTDF registry
-        try
-        {
-            $version = $projectReg.GetValue("InstalledVersion")
-            if (-not $version)
-            {
-                throw
+            #Get properties from Application BTDF registry
+            try {
+                $version = $projectReg.GetValue("InstalledVersion")
+                if (-not $version) {
+                    throw
+                }
+                Write-Debug "Version = $version"
             }
-            Write-Debug "Version = $version"
-        }
-        catch
-        {
-            Write-Warning "Unable to find version"
-        }
-        #endregion
-
-        #region Run EnvironmentSettingsExporter
-        if (($DeploymentType -eq "Deploy" -or $DeploymentType -eq "PreProcessBindings") -and ($Configuration -eq "Server"))
-        {
-            $envSettingsDir = $deployment | Join-Path -ChildPath "EnvironmentSettings" | Get-Item
-            Write-Debug "Environment Settings Dir = $($envSettingsDir.FullName)"
-
-            $settingsExporter = Join-Path -Path $deployment.FullName -ChildPath "Framework\DeployTools\EnvironmentSettingsExporter.exe"
-            Write-Debug "Settings Exporter = $settingsExporter"
-            if ($PSCmdlet.ShouldProcess($settingsExporter, "Exporting BTDF settings"))
-            {
-                Invoke-Process -FilePath $settingsExporter `
-                -ArgumentList "`"$(Join-Path -Path $envSettingsDir.FullName -ChildPath \SettingsFileGenerator.xml)`"",
-            "`"$($envSettingsDir.FullName)`"" | Out-Null
+            catch {
+                Write-Warning "Unable to find version"
             }
-            $envSettings = Join-Path -Path $envSettingsDir -ChildPath "Exported_$Environment`Settings.xml" | Get-Item
-            Write-Debug "Environment Settings = $($envSettings.FullName)"
-        }
-        #endregion
+            #endregion
 
-        #region Run MSBuild and deploy
-        if ($backRefsRemoved)
-        {
-            $projectReg | New-ItemProperty -Name "Configuration" -Value $Configuration -Force | Out-Null
-            $projectReg | New-ItemProperty -Name "LastDeploySettingsFilePath" -Value $envSettings.FullName -Force | Out-Null
-            $projectReg | New-ItemProperty -Name "Version" -Value $version -Force | Out-Null
-            Write-Verbose "$($btdfTargets[$DeploymentType]["Message"]): $projectName"
-            $msbuildArgs = "/t:$($btdfTargets[$DeploymentType]["Target"])",
-            $(if ($version)
-                {
-                    "/p:ProductVersion=$version"
-                }),
-            $(if (($DeploymentType -eq "Deploy") -and ($Configuration -eq "Server"))
-                {
-                    "/p:ENV_SETTINGS=`"$($envSettings)`""
-                }),
-            $(if ($PSBoundParameters.ContainsKey("TerminateInstances"))
-                {
-                    "/p:AutoTerminateInstances=$TerminateInstances"
-                }),
-            $(if ($Configuration)
-                {
-                    "/p:Configuration=$Configuration"
-                }),
-            $(if ($Configuration -eq "Server")
-                {
-                    "/p:DeployBizTalkMgmtDB=$DeployBTMgmtDB"
-                }),
-            $(if ($PSBoundParameters.ContainsKey("SkipBizTalkRestart"))
-                {
-                    "/p:SkipHostInstancesRestart=$SkipBizTalkRestart"
-                }),
-            $(if ($PSBoundParameters.ContainsKey("SkipIISRestart"))
-                {
-                    "/p:SkipIISReset=$SkipIISRestart"
-                }),
-            $(if ($PSBoundParameters.ContainsKey("SkipUnDeploy"))
-                {
-                    "/p:SkipUndeploy=$SkipUnDeploy"
-                }),
-            $(if ($PSBoundParameters.ContainsKey("SkipApplicationStart"))
-                {
-                    "/p:StartApplicationOnDeploy=$(-not $SkipApplicationStart)"
-                    "/p:StartReferencedApplicationsOnDeploy=$(-not $SkipApplicationStart)"
-                }),
-            "/l:FileLogger,Microsoft.Build.Engine;logfile=`"$resultsPath`""
-            if ($PSCmdlet.ShouldProcess($btdfProject, "Deploy BTDF packaged application"))
-            {
-                Invoke-MSBuild -Project $btdfProject `
-                -ArgumentList $msbuildArgs `
-                -Version 4.0 `
-                -Run32Bit `
-                -ErrorAction Stop
+            #region Run EnvironmentSettingsExporter
+            if (($DeploymentType -eq "Deploy" -or $DeploymentType -eq "PreProcessBindings") -and ($Configuration -eq "Server")) {
+                $envSettingsDir = $deployment | Join-Path -ChildPath "EnvironmentSettings" | Get-Item
+                Write-Debug "Environment Settings Dir = $($envSettingsDir.FullName)"
+
+                $settingsExporter = Join-Path -Path $deployment.FullName -ChildPath "Framework\DeployTools\EnvironmentSettingsExporter.exe"
+                Write-Debug "Settings Exporter = $settingsExporter"
+                if ($PSCmdlet.ShouldProcess($settingsExporter, "Exporting BTDF settings")) {
+                    Invoke-Process -FilePath $settingsExporter `
+                        -ArgumentList "`"$(Join-Path -Path $envSettingsDir.FullName -ChildPath \SettingsFileGenerator.xml)`"",
+                    "`"$($envSettingsDir.FullName)`"" | Out-Null
+                }
+                $envSettings = Join-Path -Path $envSettingsDir -ChildPath "Exported_$Environment`Settings.xml" | Get-Item
+                Write-Debug "Environment Settings = $($envSettings.FullName)"
             }
-        }
-        #endregion
+            #endregion
 
-        #region Restore back referenced applications in reverse
-        if ($SkipRestore -and ($backRefs.Count -gt 0))
-        {
-            Write-Verbose "Skipping restore"
-        }
-
-        if (($backRefs.Count -gt 0) -and ($DeploymentType -eq "Deploy") -and (-not $SkipRestore))
-        {
-            Write-Debug "Back References Count = $($backRefs.Count)"
-            while (($backRefs.Count -gt 0) -and ($DeploymentType -eq "Deploy"))
-            {
-                $app = $backRefs.Pop()
-                Write-Verbose "Restoring: $($app.Name)"
-                $deployParams = $PSBoundParameters
-                $deployParams["ProjectPath"] = $app.ProjectPath
-                $deployParams["DeploymentType"] = $DeploymentType
-                $deployParams["Configuration"] = $Configuration
-                if ($PSCmdlet.ShouldProcess($app.Name, "Restoring BizTalk Application"))
-                {
-                    Deploy-BTDFApplication @deployParams
+            #region Run MSBuild and deploy
+            if ($backRefsRemoved) {
+                $projectReg | New-ItemProperty -Name "Configuration" -Value $Configuration -Force | Out-Null
+                $projectReg | New-ItemProperty -Name "LastDeploySettingsFilePath" -Value $envSettings.FullName -Force | Out-Null
+                $projectReg | New-ItemProperty -Name "Version" -Value $version -Force | Out-Null
+                Write-Verbose "$($btdfTargets[$DeploymentType]["Message"]): $projectName"
+                $msbuildArgs = "/t:$($btdfTargets[$DeploymentType]["Target"])",
+                $(if ($version) {
+                        "/p:ProductVersion=$version"
+                    }),
+                $(if (($DeploymentType -eq "Deploy") -and ($Configuration -eq "Server")) {
+                        "/p:ENV_SETTINGS=`"$($envSettings)`""
+                    }),
+                $(if ($PSBoundParameters.ContainsKey("TerminateInstances")) {
+                        "/p:AutoTerminateInstances=$TerminateInstances"
+                    }),
+                $(if ($Configuration) {
+                        "/p:Configuration=$Configuration"
+                    }),
+                $(if ($Configuration -eq "Server") {
+                        "/p:DeployBizTalkMgmtDB=$DeployBTMgmtDB"
+                    }),
+                $(if ($PSBoundParameters.ContainsKey("SkipBizTalkRestart")) {
+                        "/p:SkipHostInstancesRestart=$SkipBizTalkRestart"
+                    }),
+                $(if ($PSBoundParameters.ContainsKey("SkipIISRestart")) {
+                        "/p:SkipIISReset=$SkipIISRestart"
+                    }),
+                $(if ($PSBoundParameters.ContainsKey("SkipUnDeploy")) {
+                        "/p:SkipUndeploy=$SkipUnDeploy"
+                    }),
+                $(if ($PSBoundParameters.ContainsKey("SkipApplicationStart")) {
+                        "/p:StartApplicationOnDeploy=$(-not $SkipApplicationStart)"
+                        "/p:StartReferencedApplicationsOnDeploy=$(-not $SkipApplicationStart)"
+                    }),
+                "/l:FileLogger,Microsoft.Build.Engine;logfile=`"$resultsPath`""
+                if ($PSCmdlet.ShouldProcess($btdfProject, "Deploy BTDF packaged application")) {
+                    Invoke-MSBuild -Project $btdfProject `
+                        -ArgumentList $msbuildArgs `
+                        -Version 4.0 `
+                        -Run32Bit `
+                        -ErrorAction Stop
                 }
             }
+            #endregion
+
+            #region Restore back referenced applications in reverse
+            if ($SkipRestore -and ($backRefs.Count -gt 0)) {
+                Write-Verbose "Skipping restore"
+            }
+
+            if (($backRefs.Count -gt 0) -and ($DeploymentType -eq "Deploy") -and (-not $SkipRestore)) {
+                Write-Debug "Back References Count = $($backRefs.Count)"
+                while (($backRefs.Count -gt 0) -and ($DeploymentType -eq "Deploy")) {
+                    $app = $backRefs.Pop()
+                    Write-Verbose "Restoring: $($app.Name)"
+                    $deployParams = $PSBoundParameters
+                    $deployParams["ProjectPath"] = $app.ProjectPath
+                    $deployParams["DeploymentType"] = $DeploymentType
+                    $deployParams["Configuration"] = $Configuration
+                    if ($PSCmdlet.ShouldProcess($app.Name, "Restoring BizTalk Application")) {
+                        Deploy-BTDFApplication @deployParams
+                    }
+                }
+            }
+            #endregion
         }
-        #endregion
     }
 }
