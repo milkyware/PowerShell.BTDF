@@ -69,7 +69,7 @@ function Deploy-BTDFApplication {
         [System.IO.DirectoryInfo[]]$ProjectPath,
 
         [Parameter(HelpMessage = "Defaults to Deploy")]
-        [ValidateSet("Deploy", "DeployBAM", "DeployBRE", "DeploySSO", "Installer", "PreProcessBindings", "QuickDeploy", "Undeploy", "UndeployBAM", "UndeployBRE")]
+        [ValidateSet("BounceBizTalk", "Deploy", "DeployBAM", "DeployBRE", "DeploySSO", "Installer", "PreProcessBindings", "QuickDeploy", "Undeploy", "UndeployBAM", "UndeployBRE")]
         [string]$DeploymentType = "Deploy",
 
         [Parameter(HelpMessage = "Valid parameters are Debug, Release and Server. Defaults to Debug")]

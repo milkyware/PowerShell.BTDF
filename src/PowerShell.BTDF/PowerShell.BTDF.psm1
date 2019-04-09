@@ -19,6 +19,10 @@ Process {
     }
 
     $btdfTargets = @{
+        "BounceBizTalk" = @{
+            "Message" = "Boucing BizTalk"
+            "Target" = "BounceBizTalk"
+        }
         "Deploy" = @{
             "Message" = "Deploying application"
             "Target" = "Deploy"
