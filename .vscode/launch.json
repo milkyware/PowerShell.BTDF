@@ -8,7 +8,7 @@
             "type": "PowerShell",
             "request": "launch",
             "name": "PowerShell Import PowerShell.BTDF",
-            "script": "Import-Module ${workspaceRoot}/PowerShell.BTDF/PowerShell.BTDF.psd1",
+            "script": "Import-Module ${workspaceRoot}/src/PowerShell.BTDF/PowerShell.BTDF.psd1",
             "args": ["-Force"],
             "cwd": "${workspaceRoot}"
         },
