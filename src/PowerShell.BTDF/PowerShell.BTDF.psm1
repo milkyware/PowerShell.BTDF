@@ -1,4 +1,5 @@
 #Requires -RunAsAdministrator
+#Requires -PSEdition Desktop
 
 [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.BizTalk.ExplorerOM")
 [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.BizTalk.Operations")
