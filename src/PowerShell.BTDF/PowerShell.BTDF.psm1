@@ -29,7 +29,7 @@ $btdfTargets = @{
     }
     "ImportBindings"     = @{
         "Message" = "Importing bindings"
-        "Target" = "ImportBindings"
+        "Target"  = "ImportBindings"
     }
     "Installer"          = @{
         "Message" = "Packaging"
