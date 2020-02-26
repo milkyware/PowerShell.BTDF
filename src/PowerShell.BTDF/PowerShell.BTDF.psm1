@@ -59,6 +59,29 @@ $btdfTargets = @{
 #endregion
 
 #region BTDF
+<#
+.SYNOPSIS
+    Helper function to clean BizTalk environment using BTDF
+.DESCRIPTION
+    Uses BizTalk ExplorerOM to build a list of BizTalk applications currently installed. Each application is undeployed using "Deploy-BTDFApplication" to cleanly undeploy applications as well as handling dependencies. An exemption list is also included to leave specified, base applications
+.EXAMPLE
+    PS C:\> Clean-BTDFEnvironment
+    Removes all BTDF BizTalk applications using the Debug configuration, the default for local development
+.EXAMPLE
+    PS C:\> Clean-BTDFEnvironment -Configuration Release
+    Removes all BTDF BizTalk applications using the Release configuration
+.EXAMPLE
+    PS C:\> Clean-BTDFEnvironment -Exemptions Common
+    Removes all BTDF BizTalk applications using the Debug configuration except for the "Common" application
+.PARAMETER Configuration
+    Deploys the BizTalk artifacts from the specified bin location. Debug and Release are default build configuration in VS. Server is used to (un)deploy BizTalk artifacts from an MSI installation
+.PARAMETER TerminateInstances
+    Terminates BizTalk service instances as part of the undeployment process
+.PARAMETER Exemptions
+    A dynamic list of applications which can be exempt from the cleaning process
+.NOTES
+    General notes
+#>
 function Clean-BTDFEnvironment
 {
     [CmdletBinding()]
@@ -152,6 +175,9 @@ function Clean-BTDFEnvironment
 
 .PARAMETER DeploymentType
     Choose whether to "Deploy", "Undeploy" or "Quick Deploy (UpdateOrchestration)" the BizTalk application (Default is "Deploy")
+
+.PARAMETER Configuration
+    Deploys the BizTalk artifacts from the specified bin location. Debug and Release are default build configuration in VS. Server is used to (un)deploy BizTalk artifacts from an MSI installation
 
 .PARAMETER Environment
     Select the environment to deploy. Must match what is configured in BTDF environmentsettings spreadsheet. Defaults to Local (Only applicable to Server deployments)
