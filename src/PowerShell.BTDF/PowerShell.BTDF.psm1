@@ -1,9 +1,18 @@
 #Requires -RunAsAdministrator
 #Requires -PSEdition Desktop
 
-[System.Reflection.Assembly]::LoadWithPartialName("Microsoft.BizTalk.ExplorerOM")
-[System.Reflection.Assembly]::LoadWithPartialName("Microsoft.BizTalk.Operations")
-[System.Reflection.Assembly]::LoadWithPartialName("SSOSettingsFileReader")
+if (-not [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.BizTalk.ExplorerOM"))
+{
+    throw [System.ApplicationException]::new("Failed to load Microsoft.BizTalk.ExplorerOM")
+}
+if (-not [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.BizTalk.Operations"))
+{
+    throw [System.ApplicationException]::new("Failed to load Microsoft.BizTalk.Operations")
+}
+if (-not [System.Reflection.Assembly]::LoadWithPartialName("SSOSettingsFileReader"))
+{
+    throw [System.ApplicationException]::new("Failed to load SSOSettingsFileReader")
+}
 
 #region Variables
 $btdfTargets = @{
