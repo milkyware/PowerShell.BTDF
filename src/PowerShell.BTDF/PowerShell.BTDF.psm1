@@ -5,6 +5,59 @@
 [System.Reflection.Assembly]::LoadWithPartialName("Microsoft.BizTalk.Operations")
 [System.Reflection.Assembly]::LoadWithPartialName("SSOSettingsFileReader")
 
+#region Variables
+$btdfTargets = @{
+    "BounceBizTalk"      = @{
+        "Message" = "Boucing BizTalk"
+        "Target"  = "BounceBizTalk"
+    }
+    "Deploy"             = @{
+        "Message" = "Deploying application"
+        "Target"  = "Deploy"
+    }
+    "DeployBAM"          = @{
+        "Message" = "Deploying BAM"
+        "Target"  = "GetSoftwarePaths;InitializeAppName;DeployBAM"
+    }
+    "DeployBRE"          = @{
+        "Message" = "Deploying BRE" 
+        "Target"  = "DeployVocabAndRules"
+    }
+    "DeploySSO"          = @{
+        "Message" = "Deploying SSO"
+        "Target"  = "DeploySSO"
+    }
+    "ImportBindings"     = @{
+        "Message" = "Importing bindings"
+        "Target" = "ImportBindings"
+    }
+    "Installer"          = @{
+        "Message" = "Packaging"
+        "Target"  = "Installer"
+    }
+    "PreProcessBindings" = @{
+        "Message" = "Pre-Processing bindings"
+        "Target"  = "PreprocessBindings"
+    }
+    "QuickDeploy"        = @{
+        "Message" = "Quick deploying application"
+        "Target"  = "UpdateOrchestration"
+    }
+    "Undeploy"           = @{
+        "Message" = "Undeploying application"
+        "Target"  = "Undeploy"
+    }
+    "UndeployBAM"        = @{
+        "Message" = "Undeploying BAM"
+        "Target"  = "GetSoftwarePaths;InitializeAppName;UndeployBAM"
+    }
+    "UndeployBRE"        = @{
+        "Message" = "Undeploying BRE"
+        "Target"  = "UndeployVocabAndRules"
+    }
+}
+#endregion
+
 #region BTDF
 function Clean-BTDFEnvironment
 {
@@ -990,56 +1043,5 @@ $softwareReg32 = if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64")
 else
 {
     Get-Item -Path HKLM:\SOFTWARE
-}
-
-$btdfTargets = @{
-    "BounceBizTalk"      = @{
-        "Message" = "Boucing BizTalk"
-        "Target"  = "BounceBizTalk"
-    }
-    "Deploy"             = @{
-        "Message" = "Deploying application"
-        "Target"  = "Deploy"
-    }
-    "DeployBAM"          = @{
-        "Message" = "Deploying BAM"
-        "Target"  = "GetSoftwarePaths;InitializeAppName;DeployBAM"
-    }
-    "DeployBRE"          = @{
-        "Message" = "Deploying BRE" 
-        "Target"  = "DeployVocabAndRules"
-    }
-    "DeploySSO"          = @{
-        "Message" = "Deploying SSO"
-        "Target"  = "DeploySSO"
-    }
-    "ImportBindings"     = @{
-        "Message" = "Importing bindings"
-        "Target" = "ImportBindings"
-    }
-    "Installer"          = @{
-        "Message" = "Packaging"
-        "Target"  = "Installer"
-    }
-    "PreProcessBindings" = @{
-        "Message" = "Pre-Processing bindings"
-        "Target"  = "PreprocessBindings"
-    }
-    "QuickDeploy"        = @{
-        "Message" = "Quick deploying application"
-        "Target"  = "UpdateOrchestration"
-    }
-    "Undeploy"           = @{
-        "Message" = "Undeploying application"
-        "Target"  = "Undeploy"
-    }
-    "UndeployBAM"        = @{
-        "Message" = "Undeploying BAM"
-        "Target"  = "GetSoftwarePaths;InitializeAppName;UndeployBAM"
-    }
-    "UndeployBRE"        = @{
-        "Message" = "Undeploying BRE"
-        "Target"  = "UndeployVocabAndRules"
-    }
 }
 #endregion
