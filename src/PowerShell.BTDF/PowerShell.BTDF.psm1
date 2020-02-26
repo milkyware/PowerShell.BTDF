@@ -75,27 +75,27 @@ function Clean-BTDFEnvironment
         $btsCatalog.Refresh()
         $btsApps = $btsCatalog.Applications | Select-Object -Property Name, $projectPathColumn | Where-Object { $_.ProjectPath }
 
-        $paramDict = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
+        $paramDict = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
 
         #region DeployBTMgmtDB
         if ($Configuration -eq "Server")
         {
-            $attributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-            $parameter = New-Object System.Management.Automation.ParameterAttribute
+            $attributeCollection = [System.Collections.ObjectModel.Collection[System.Attribute]]::new()
+            $parameter = [System.Management.Automation.ParameterAttribute]::new()
             $parameter.HelpMessage = "Register artifacts in BizTalk DB"
             $attributeCollection.Add($parameter)
-            $deployBTMgmtDBParameter = New-Object System.Management.Automation.RuntimeDefinedParameter("DeployBTMgmtDB", [switch], $attributeCollection)
+            $deployBTMgmtDBParameter = [System.Management.Automation.RuntimeDefinedParameter]::new("DeployBTMgmtDB", [switch], $attributeCollection)
             $paramDict.Add("DeployBTMgmtDB", $deployBTMgmtDBParameter)
         }
         #endregion
 
         #region Exemptions
-        $attributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-        $parameter = New-Object System.Management.Automation.ParameterAttribute
+        $attributeCollection = [System.Collections.ObjectModel.Collection[System.Attribute]]::new()
+        $parameter = [System.Management.Automation.ParameterAttribute]::new()
         $attributeCollection.Add($parameter)
-        $validateSet = New-Object System.Management.Automation.ValidateSetAttribute($btsApps | Select-Object -ExpandProperty Name)
+        $validateSet = [System.Management.Automation.ValidateSetAttribute]::new(($btsApps | Select-Object -ExpandProperty Name))
         $attributeCollection.Add($validateSet)
-        $exemptionsParameter = New-Object System.Management.Automation.RuntimeDefinedParameter("Exemptions", [System.Collections.Generic.List[string]], $attributeCollection)
+        $exemptionsParameter = [System.Management.Automation.RuntimeDefinedParameter]::new("Exemptions", [System.Collections.Generic.List[string]], $attributeCollection)
         $exemptionsParameter.Value = @()
         $paramDict.Add("Exemptions", $exemptionsParameter)
         $PSBoundParameters["Exemptions"] = [System.Collections.Generic.List[string]]::new()
