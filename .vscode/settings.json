@@ -1,5 +1,3 @@
 {
-    "cSpell.words": [
-        "btdf"
-    ]
+    "powershell.powerShellDefaultVersion": "Windows PowerShell (x64)"
 }
