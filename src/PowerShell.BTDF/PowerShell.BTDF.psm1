@@ -125,7 +125,7 @@ function Clean-BTDFEnvironment
         $attributeCollection = [System.Collections.ObjectModel.Collection[System.Attribute]]::new()
         $parameter = [System.Management.Automation.ParameterAttribute]::new()
         $attributeCollection.Add($parameter)
-        $validateSet = [System.Management.Automation.ValidateSetAttribute]::new(($btsApps | Select-Object -ExpandProperty Name))
+        $validateSet = [System.Management.Automation.ValidateSetAttribute]::new([string[]]($btsApps | Select-Object -ExpandProperty Name))
         $attributeCollection.Add($validateSet)
         $exemptionsParameter = [System.Management.Automation.RuntimeDefinedParameter]::new("Exemptions", [System.Collections.Generic.List[string]], $attributeCollection)
         $exemptionsParameter.Value = @()
