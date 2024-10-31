@@ -30,7 +30,7 @@ Currently, these scripts rely on the **ProjectName** and **Manufacturer** proper
 
 ### Double-Hop
 
-Using this module as part of a remote deployment in a multi-server BizTalk configuration (separate BizTalk and SQL servers) you will encounter issues with **double hop** authentication within PowerShell. A number of **[articles document this] (blogs.technet.microsoft.com/heyscriptingguy/2013/04/04/enabling-multihop-remoting/)**, however, the commands needed are as follows:
+Using this module as part of a remote deployment in a multi-server BizTalk configuration (separate BizTalk and SQL servers) you will encounter issues with **double hop** authentication within PowerShell. A number of **[articles document this](https://blogs.technet.microsoft.com/heyscriptingguy/2013/04/04/enabling-multihop-remoting/)**, however, the commands needed are as follows:
 
 For the server initiating the remote command (e.g. Deployment server)
 
